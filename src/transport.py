@@ -26,7 +26,7 @@ class SerialReader(Transport):
             baudrate: int = 115200, 
             bytesize: str = "EIGHTBITS", 
             parity: str = "PARITY_NONE", 
-            stopbits = serial.STOPBITS_ONE, 
+            stopbits: str = "STOPBITS_ONE", 
             timeout: float | None = 0.1,
             chunklength: int = 1
         ):
@@ -102,6 +102,11 @@ class SerialReader(Transport):
     def stop(self) -> None:
         self._running = False
         self._reader.close()
+
+    def _read_once(self):
+        byte = self._reader.read(self._chunklength)
+        if byte:
+            self._queue.put(byte, block=False)
 
     def _read_loop(self):
         while self._running:
