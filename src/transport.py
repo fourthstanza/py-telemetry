@@ -23,15 +23,13 @@ class SerialReader(Transport):
             self,
             port: str, 
             queuelength: int = 4096, 
-            baudrate: int = 9600, 
+            baudrate: int = 115200, 
             bytesize: str = "EIGHTBITS", 
             parity: str = "PARITY_NONE", 
             stopbits = serial.STOPBITS_ONE, 
-            timeout: float | None = None
+            timeout: float | None = 0.1,
+            chunklength: int = 1
         ):
-
-        with open("config.toml", "rb") as f:
-            config = tomllib.load(f)
         
         self._port = port
         self._queuelength = queuelength
@@ -40,7 +38,7 @@ class SerialReader(Transport):
         self._timeout = timeout
         self._running: bool = True
         self._thread = None
-        self._chunklength = config["chunk_length"]
+        self._chunklength = chunklength
 
         match bytesize:
             case("FIVEBITS" | "5"):
@@ -90,7 +88,7 @@ class SerialReader(Transport):
             self._timeout
         )
 
-    def start(self):
+    def start(self)  -> None:
         if not self._reader.is_open:
             self._reader.open()
         if self._running == False:
@@ -101,7 +99,7 @@ class SerialReader(Transport):
             self._running = True
             self._thread.start
 
-    def stop(self):
+    def stop(self) -> None:
         self._running = False
         self._reader.close()
 
@@ -116,5 +114,3 @@ class SerialReader(Transport):
             return self._queue.get(timeout = timeout)
         except queue.ShutDown:
             return None
-
-
