@@ -114,8 +114,8 @@ class SerialReader(Transport):
             if byte:
                 self._queue.put(byte, block=False)
 
-    def get_bytes(self, timeout) -> bytes | None:
+    def get_bytes(self) -> bytes | None:
         try:
-            return self._queue.get(timeout = timeout)
+            return self._queue.get(timeout = self._timeout)
         except queue.ShutDown:
             return None

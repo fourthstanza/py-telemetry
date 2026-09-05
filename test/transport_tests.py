@@ -26,7 +26,21 @@ def test_read_once():
         transport = SerialReader("COM7")
         transport._read_once()
 
-        assert transport._queue.get_nowait() == b"\x01\x02\x03"
+        assert transport.get_bytes() == b"\x01\x02\x03"
+
+def test_read_twice():
+    with patch("transport.serial.Serial") as mock_serial:
+        mock_serial.return_value.read.return_value = b"\x01\x02\x03"
+
+        transport = SerialReader("COM7")
+        transport._read_once()
+
+        mock_serial.return_value.read.return_value = b"\x01\x02\x02\x02\x03"
+
+        transport._read_once()
+
+        assert transport.get_bytes() == b"\x01\x02\x03"
+        assert transport.get_bytes() == b"\x01\x02\x02\x02\x03"
 
 def test_read_once_no_data():
     with patch("transport.serial.Serial") as mock_serial:
